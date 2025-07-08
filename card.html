@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生証</title>
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --card-bg: white;
+            --border-color: #ddd;
+        }
+        .dark-mode {
+            --primary-color: #3399ff;
+            --bg-color: #121212;
+            --text-color: #f0f0f0;
+            --card-bg: #1e1e1e;
+            --border-color: #444;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .student-card {
+            width: 400px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .school-logo {
+            height: 60px;
+            margin-bottom: 10px;
+            object-fit: contain;
+        }
+        .school-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .card-title {
+            font-size: 16px;
+        }
+        .photo-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .student-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+        }
+        .info-container {
+            padding: 0 20px 20px;
+        }
+        .info-row {
+            margin-bottom: 15px;
+        }
+        .info-label {
+            font-weight: bold;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+        .info-value {
+            word-break: break-all;
+            font-size: 16px;
+        }
+        .name-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .name-kana {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .qr-code {
+            width: 150px;
+            height: 150px;
+            background-color: white;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .timestamp {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+            border-top: 1px dashed var(--border-color);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="student-card">
+        <div class="header">
+            <img src="" alt="学校ロゴ" class="school-logo" id="schoolLogo">
+            <div class="school-name">東京有明医療大学</div>
+            <div class="card-title">学生証</div>
+        </div>
+
+        <div class="photo-container">
+            <img src="" alt="学生写真" class="student-photo" id="studentPhoto">
+        </div>
+
+        <div class="info-container">
+            <div class="info-row">
+                <div class="info-label">学籍番号</div>
+                <div class="info-value" id="studentId"></div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">氏名</div>
+                <div class="name-container">
+                    <div class="name-kana" id="studentNameKana"></div>
+                    <div class="info-value" id="studentName"></div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">学科</div>
+                <div class="info-value" id="department"></div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">住所</div>
+                <div class="info-value" id="address"></div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">生年月日</div>
+                <div class="info-value" id="birthDate"></div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">有効期限</div>
+                <div class="info-value">2026年3月31日</div>
+            </div>
+
+            <div class="qr-container">
+                <div class="qr-code" id="qrCode"></div>
+            </div>
+
+            <div class="timestamp" id="timestamp"></div>
+        </div>
+
+        <div class="footer">
+            この学生証は譲渡できません
+        </div>
+    </div>
+
+    <script>
+        // データを読み込んで表示
+        const studentData = JSON.parse(localStorage.getItem('studentData'));
+
+        if (studentData) {
+            // ダークモード適用
+            if (studentData.darkMode) {
+                document.body.classList.add('dark-mode');
+            }
+
+            // 画像設定
+            if (studentData.logoUrl) {
+                document.getElementById('schoolLogo').src = studentData.logoUrl;
+            }
+            if (studentData.photoUrl) {
+                document.getElementById('studentPhoto').src = studentData.photoUrl;
+            }
+
+            // テキスト情報設定
+            document.getElementById('studentId').textContent = studentData.id;
+            document.getElementById('studentName').textContent = studentData.name;
+            document.getElementById('studentNameKana').textContent = studentData.nameKana;
+            document.getElementById('department').textContent = studentData.department;
+            document.getElementById('address').textContent = studentData.address;
+            document.getElementById('birthDate').textContent = formatDate(studentData.birthDate);
+
+            // QRコード生成
+            generateQRCode(`学籍番号:${studentData.id}\n氏名:${studentData.name}\n生年月日:${formatDate(studentData.birthDate)}\n学科:${studentData.department}`);
+
+            // タイムスタンプ更新
+            updateTimestamp();
+            setInterval(updateTimestamp, 1000);
+        } else {
+            alert('学生データが見つかりません');
+            window.location.href = 'index.html';
+        }
+
+        // 日付フォーマット関数
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}年${month}月${day}日`;
+        }
+
+        // タイムスタンプ更新関数
+        function updateTimestamp() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: false 
+            };
+            document.getElementById('timestamp').textContent = 
+                `表示日時: ${now.toLocaleDateString('ja-JP', options)}`;
+        }
+
+        // QRコード生成関数
+        function generateQRCode(text) {
+            const qr = qrcode(0, 'L');
+            qr.addData(text);
+            qr.make();
+            document.getElementById('qrCode').innerHTML = qr.createImgTag(4);
+        }
+    </script>
+</body>
+</html>
